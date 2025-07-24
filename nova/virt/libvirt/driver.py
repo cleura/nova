@@ -1417,6 +1417,11 @@ class LibvirtDriver(driver.ComputeDriver):
             migration_flags |= libvirt.VIR_MIGRATE_AUTO_CONVERGE
         return migration_flags
 
+    def _handle_live_migration_parallel(self, migration_flags):
+        if CONF.libvirt.live_migration_parallel_connections > 1:
+            migration_flags |= libvirt.VIR_MIGRATE_PARALLEL
+        return migration_flags
+
     def _parse_migration_flags(self):
         (live_migration_flags,
             block_migration_flags) = self._prepare_migration_flags()
@@ -1439,6 +1444,11 @@ class LibvirtDriver(driver.ComputeDriver):
         live_migration_flags = self._handle_live_migration_auto_converge(
             live_migration_flags)
         block_migration_flags = self._handle_live_migration_auto_converge(
+            block_migration_flags)
+
+        live_migration_flags = self._handle_live_migration_parallel(
+            live_migration_flags)
+        block_migration_flags = self._handle_live_migration_parallel(
             block_migration_flags)
 
         self._live_migration_flags = live_migration_flags
@@ -10964,12 +10974,14 @@ class LibvirtDriver(driver.ComputeDriver):
                 serial_ports = list(self._get_serial_ports_from_guest(guest))
 
             LOG.debug("About to invoke the migrate API", instance=instance)
-            guest.migrate(self._live_migration_uri(dest),
-                          migrate_uri=migrate_uri,
-                          flags=migration_flags,
-                          migrate_disks=device_names,
-                          destination_xml=new_xml_str,
-                          bandwidth=CONF.libvirt.live_migration_bandwidth)
+            guest.migrate(
+                self._live_migration_uri(dest),
+                migrate_uri=migrate_uri,
+                flags=migration_flags,
+                migrate_disks=device_names,
+                destination_xml=new_xml_str,
+                bandwidth=CONF.libvirt.live_migration_bandwidth,
+                parallel=CONF.libvirt.live_migration_parallel_connections)
             LOG.debug("Migrate API has completed", instance=instance)
 
             for hostname, port in serial_ports:

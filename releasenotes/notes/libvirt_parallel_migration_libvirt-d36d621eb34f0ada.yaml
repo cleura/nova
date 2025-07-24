@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Implemented parallel live migrations for libvirt driver, which can be
+    enabled by defining ``[libvirt] live_migration_parallel_connections``
+    to the value higher then 1.
+    By default parallel migrations are not used to preserve existing
+    behavior.
