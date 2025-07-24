@@ -371,6 +371,25 @@ Related options:
 * live_migration_downtime_steps
 * live_migration_downtime_delay
 """),
+    cfg.IntOpt('live_migration_parallel_connections',
+               default=1,
+               help="""
+Number of parallel connections to QEMU during live migrations.
+
+Values above 1 will instruct hypervisor explicitly on amount of connections
+to use.
+Please note, that each connection can utilize up to 1 CPU core, especially when
+``live_migration_with_native_tls`` is used. Therefore it is recommended to
+reserve CPUs using ``cpu_shared_set``/``cpu_dedicated_set`` or
+``reserved_host_cpus`` multiplied by ``cpu_allocation_ratio``.
+
+Related options:
+
+* ``[compute] cpu_shared_set``
+* ``[compute] cpu_dedicated_set``
+* ``[DEFAULT] reserved_host_cpus``
+
+"""),
     cfg.StrOpt('live_migration_timeout_action',
                default='abort',
                choices=('abort', 'force_complete'),
